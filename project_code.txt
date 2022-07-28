@@ -1,0 +1,690 @@
+proc import file="H:\Project\product_coffee.xls"
+out=coffee dbms=xls;run;
+
+proc print data = coffee (obs=6) noobs; run;
+
+
+
+
+data coffee_final_price;
+INFILE "H:\Project\coffee_dollar.txt" firstobs = 2 missover;
+INPUT IRI_KEY WEEK SY GE VEND ITEM UNITS DOLLARS F$ D PR ;run;
+
+proc print data = coffee_final_price (obs=6) noobs; run;
+
+
+
+
+data coffee_final_price;set coffee_final_price;
+SY_1 =put(SY, z2.);
+run;
+
+data coffee_final_price;set coffee_final_price;
+GE_1 =put(GE, z2.);
+run;
+
+data coffee_final_price;set coffee_final_price;
+VEND_1 =put(VEND, z5.);
+run;
+
+data coffee_final_price;set coffee_final_price;
+ITEM_1 =put(ITEM, z5.);
+run;
+
+
+
+
+
+data coffee_final_price;
+set coffee_final_price;
+UPC = CATX('-',SY_1,GE_1,VEND_1,ITEM_1);
+run;
+
+proc print data = coffee_final_price (obs=6) noobs; run;
+
+proc contents data=coffee_final_price;run;
+
+
+
+
+proc sql;
+   alter table coffee_final_price
+      drop SY_1, GE_1, VEND_1, ITEM_1;
+quit;
+
+proc sql;
+   alter table coffee_final_price
+      drop SY, GE, VEND, ITEM;
+quit;
+
+proc print data = coffee (obs=6) noobs; run;
+proc print data = coffee_final_price (obs=6) noobs; run;
+
+
+
+ proc sql;
+    create table coffee_demo as
+    select * from coffee as x inner join coffee_final_price as y
+    on x.UPC = y.UPC;
+quit;
+
+proc print data=coffee_demo (obs=10) noobs; run;
+
+
+
+
+DATA coffee_demo_price;
+    SET coffee_demo;
+    price = (dollars / (units * (vol_eq*16)));
+RUN;
+
+proc print data=coffee_demo_price (obs=10) noobs; run;
+
+
+
+PROC SQL;        
+ SELECT L5, SUM(price) as p
+  FROM coffee_demo_price
+  GROUP BY L5
+  ORDER BY p desc;           
+quit;
+
+
+
+proc export data = coffee_demo_group
+	outfile = "H:\Project\coffee_chinal"
+	dbms = dlm;
+run;
+
+
+proc import file="H:\Project\iri_week.xlsx"
+out=coffee_group dbms=xlsx replace;
+run;
+
+proc print data=coffee_group (obs=10) noobs; run;
+
+ proc sql;
+    create table coffee_demo_group as
+    select * from coffee_group as x inner join coffee_final_price as y
+    on x.UPC = y.UPC;
+quit;
+
+proc print data=coffee_demo_group (obs=10) noobs; run;
+
+DATA coffee_demo_group;
+    SET coffee_demo_group;
+    price = (dollars / (units * (vol_eq*16)));
+RUN;
+
+proc print data=coffee_demo_group (obs=10) noobs; run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+Brand_folgers = L5_CATEGORY;
+If L5_CATEGORY = 'FOLGERS' then Brand_folgers = 1;
+else Brand_folgers = 0;
+run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+Brand_maxwell = L5_CATEGORY;
+If L5_CATEGORY = 'MAXWELL' then Brand_maxwell = 1;
+else Brand_maxwell = 0;
+run;
+
+
+Data coffee_demo_group ; set coffee_demo_group ;
+Brand_Starbucks = L5_CATEGORY;
+If L5_CATEGORY = 'STARBUCKS' then Brand_Starbucks = 1;
+else Brand_Starbucks = 0;
+run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+Brand_OTHER = L5_CATEGORY;
+If L5_CATEGORY = 'OTHER' then Brand_OTHER = 1;
+else Brand_OTHER = 0;
+run;
+
+Data coffee_demo_group; set coffee_demo_group ;
+Brand_millstone= L5_CATEGORY;
+If L5_CATEGORY = 'MILLSTONE' then Brand_millstone = 1;
+else Brand_millstone = 0;
+run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+Brand_private= L5_CATEGORY;
+If L5_CATEGORY = 'PRIVATE' then Brand_private = 1;
+else Brand_private = 0;
+run;
+
+
+proc print data = coffee_demo_group (obs = 100);run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+flavour_category_regular = FLAVOUR_CATEGORY;
+If FLAVOUR_CATEGORY = 'REGULAR' then flavour_category_regular = 1;
+else flavour_category_regular = 0;
+run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+flavour_category_chocolate = FLAVOUR_CATEGORY;
+If FLAVOUR_CATEGORY = 'CHOCOLATE' then flavour_category_chocolate = 1;
+else flavour_category_chocolate = 0;
+run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+flavour_category_vanilla = FLAVOUR_CATEGORY;
+If FLAVOUR_CATEGORY = 'VANILLA' then flavour_category_vanilla = 1;
+else flavour_category_vanilla = 0;
+run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+flavour_category_other = FLAVOUR_CATEGORY;
+If FLAVOUR_CATEGORY = 'OTHER' then flavour_category_other = 1;
+else flavour_category_other = 0;
+run;
+
+proc print data = coffee_demo_group (obs = 100);run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+package_category_bag = PACKAGE_CATEGORY;
+If PACKAGE_CATEGORY = 'BAG' then package_category_bag = 1;
+else package_category_bag = 0;
+run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+package_category_box = PACKAGE_CATEGORY;
+If PACKAGE_CATEGORY = 'BOX' then package_category_box = 1;
+else package_category_box = 0;
+run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+package_category_container = PACKAGE_CATEGORY;
+If PACKAGE_CATEGORY = 'CONTAINER' then package_category_container = 1;
+else package_category_container = 0;
+run;
+
+Data coffee_demo_group ; set coffee_demo_group ;
+package_category_other = PACKAGE_CATEGORY;
+If PACKAGE_CATEGORY = 'OTHER' then package_category_other = 1;
+else package_category_other = 0;
+run;
+
+proc print data = coffee_demo_group (obs = 100);run;
+
+data coffee_demo_group; set coffee_demo_group;
+A_plus = F;
+if F = 'A+' then A_plus = 1;
+else A_plus = 0;
+run; 
+
+data coffee_demo_group; set coffee_demo_group;
+A = F;
+if F = 'A' then A = 1;
+else A = 0;
+run; 
+
+data coffee_demo_group; set coffee_demo_group;
+B = F;
+if F = 'B' then B = 1;
+else B = 0;
+run; 
+
+data coffee_demo_group; set coffee_demo_group;
+C = F;
+if F = 'C' then C = 1;
+else C = 0;
+run; 
+
+data coffee_demo_group; set coffee_demo_group;
+NONE = F;
+if F = 'NONE' then NONE = 1;
+else NONE = 0;
+run; 
+
+/*D column*/
+data coffee_demo_group; set coffee_demo_group;
+D_0 = D;
+if D = '0' then D_0 = 1;
+else D_0 = 0;
+run; 
+
+data coffee_demo_group; set coffee_demo_group;
+D_1 = D;
+if D = '1' then D_1 = 1;
+else D_1 = 0;
+run; 
+
+data coffee_demo_group; set coffee_demo_group;
+D_2 = D;
+if D = '2' then D_2 = 1;
+else D_2 = 0;
+run;
+
+proc print data = coffee_demo_group (obs = 10); run;
+
+
+/*A plus*/
+
+data coffee_demo_grop; set coffee_demo_group;
+numeric_A_plus = input(A_plus, comma8.);
+drop A_plus;
+rename numeric_A_plus = A_plus;
+run;
+
+
+/*A*/
+data coffee_demo_group; set coffee_demo_group;
+numeric_A = input(A, comma8.);
+drop A;
+rename numeric_A = A;
+run;
+
+
+
+/*B*/
+data coffee_demo_group; set coffee_demo_group;
+numeric_B = input(B, comma8.);
+drop B;
+rename numeric_B = B;
+run;
+
+
+/*C*/
+data coffee_demo_group; set coffee_demo_group;
+numeric_C = input(C, comma8.);
+drop C;
+rename numeric_C = C;
+run;
+
+/*None*/
+data coffee_demo_group; set coffee_demo_group;
+numeric_None = input(None, comma8.);
+drop None;
+rename numeric_None = None;
+run;
+
+proc print data = coffee_demo_group (obs = 100);run;
+
+proc contents data = coffee_demo_group;run;
+
+
+
+
+
+data coffee_demo_group; set coffee_demo_group;
+numeric_Brand_folgers = input(Brand_folgers, comma14.);
+drop Brand_folgers;
+rename numeric_Brand_folgers = BRAND_FOLGERS;
+run;
+
+
+data coffee_demo_group; set coffee_demo_group;
+numeric_Brand_maxwell = input(Brand_maxwell, comma14.);
+drop Brand_maxwell;
+rename numeric_Brand_maxwell = BRAND_MAXWELL;
+run;
+
+
+data coffee_demo_group; set coffee_demo_group;
+numeric_Brand_Starbucks = input(Brand_Starbucks, comma14.);
+drop Brand_Starbucks;
+rename numeric_Brand_Starbucks = BRAND_STARBUCKS;
+run;
+
+
+data coffee_demo_group; set coffee_demo_group;
+numeric_Brand_millstone = input(Brand_millstone, comma14.);
+drop Brand_millstone;
+rename numeric_Brand_millstone = BRAND_MILLSTONE;
+run;
+
+
+data coffee_demo_group; set coffee_demo_group;
+numeric_Brand_OTHER = input(Brand_OTHER, comma14.);
+drop Brand_OTHER;
+rename numeric_Brand_OTHER = BRAND_OTHER;
+run;
+
+
+data coffee_demo_group; set coffee_demo_group;
+numeric_Brand_private = input(Brand_private, comma14.);
+drop Brand_private;
+rename numeric_Brand_private = BRAND_PRIVATE;
+run;
+
+
+proc print data = coffee_demo_group (obs = 10);run;
+
+
+
+
+data coffee_demo_group; set coffee_demo_group;
+numeric_flavour_category_regular = input(flavour_category_regular, comma18.);
+drop flavour_category_regular;
+rename numeric_flavour_category_regular = flavour_category_REGULAR;
+run;
+
+
+data coffee_demo_group; set coffee_demo_group;
+n_flavour_category_chocolate = input(flavour_category_chocolate, comma18.);
+drop flavour_category_chocolate;
+rename n_flavour_category_chocolate = flavour_category_CHOCOLATE;
+run;
+
+
+data coffee_demo_group; set coffee_demo_group;
+numeric_flavour_category_vanilla = input(flavour_category_vanilla, comma18.);
+drop flavour_category_vanilla;
+rename numeric_flavour_category_vanilla = flavour_category_VANILLA;
+run;
+
+
+data coffee_demo_group; set coffee_demo_group;
+numeric_flavour_category_other = input(flavour_category_other, comma18.);
+drop flavour_category_other;
+rename numeric_flavour_category_other = flavour_category_OTHER;
+run;
+
+proc print data = coffee_demo_group (obs = 10);run;
+
+
+
+data coffee_demo_group; set coffee_demo_group;
+n_package_category_bag = input(package_category_bag, comma18.);
+drop package_category_bag;
+rename n_package_category_bag = package_category_BAG;
+run;
+
+data coffee_demo_group; set coffee_demo_group;
+n_package_category_box = input(package_category_box, comma18.);
+drop package_category_box;
+rename n_package_category_box = package_category_BOX;
+run;
+
+data coffee_demo_group; set coffee_demo_group;
+n_package_category_container = input(package_category_container, comma18.);
+drop package_category_container;
+rename n_package_category_container = package_category_CONTAINER;
+run;
+
+data coffee_demo_group; set coffee_demo_group;
+n_package_category_other = input(package_category_other, comma18.);
+drop package_category_other;
+rename n_package_category_other = package_category_OTHER;
+run;
+
+proc print data = coffee_random_data (obs=50);run;
+
+
+proc surveyselect data= coffee_demo_group
+    out=coffee_random_data
+    seed=1234
+    sampsize=5000;
+run;
+
+proc export 
+  data= coffee_random_data
+  dbms=xlsx 
+  outfile="H:\Project\coffee_demo_group_final" 
+  replace;
+run;
+
+
+
+/*reg model (a_plus, brand_maxwell removed for reference)*/
+
+proc reg data = coffee_random_data;
+model price =  D_0 D_1 A B C None BRAND_FOLGERS BRAND_STARBUCKS BRAND_MILLSTONE BRAND_PRIVATE BRAND_OTHER flavour_category_REGULAR flavour_category_VANILLA flavour_category_CHOCOLATE package_category_BAG package_category_BOX package_category_CONTAINER;
+run; 
+
+/*reg model with insignificant variables removed*/
+proc reg data = coffee_random_data;
+model price =  D_0  BRAND_FOLGERS BRAND_STARBUCKS BRAND_MILLSTONE BRAND_OTHER flavour_category_REGULAR flavour_category_VANILLA flavour_category_CHOCOLATE package_category_BAG package_category_BOX package_category_CONTAINER;
+run; 
+
+/*vif*/
+proc reg data = coffee_random_data;
+model price =  D_0  BRAND_FOLGERS BRAND_STARBUCKS BRAND_MILLSTONE BRAND_OTHER flavour_category_REGULAR flavour_category_VANILLA flavour_category_CHOCOLATE package_category_BAG package_category_BOX package_category_CONTAINER /VIF;
+run; 
+
+/*vif with package_container removed*/
+proc reg data = coffee_random_data;
+model price =  D_0 BRAND_FOLGERS BRAND_STARBUCKS BRAND_MILLSTONE BRAND_OTHER flavour_category_REGULAR flavour_category_VANILLA flavour_category_CHOCOLATE package_category_BAG package_category_BOX /VIF;
+run; 
+
+
+proc reg data = coffee_random_data;
+model dollars =  D_0 D_1 A B C None vol_eq BRAND_FOLGERS BRAND_STARBUCKS BRAND_MILLSTONE BRAND_PRIVATE BRAND_OTHER flavour_category_REGULAR flavour_category_VANILLA flavour_category_CHOCOLATE package_category_BAG package_category_BOX package_category_CONTAINER;
+run; 
+
+proc reg data = coffee_random_data;
+model dollars =  D_0 D_1 C None vol_eq BRAND_FOLGERS BRAND_STARBUCKS flavour_category_REGULAR package_category_CONTAINER;
+run;
+
+proc reg data = coffee_random_data;
+model dollars =  D_0 D_1 C None vol_eq BRAND_FOLGERS BRAND_STARBUCKS flavour_category_REGULAR package_category_CONTAINER /VIF;
+run;
+
+
+proc import file="H:\Project\iri_week.xls"
+out=iri_week dbms=xls;run;
+
+proc print data = iri_week (obs=6) noobs; run;
+
+Data iri_week ; set iri_week ;
+Market_cities_losangeles = Market_cities;
+If Market_cities = 'LOS ANGELES' then market_cities_losangeles= 1;
+else market_cities_losangeles= 0;
+run;
+
+Data iri_week ; set iri_week ;
+Market_cities_other = Market_cities;
+If market_cities = 'OTHER' then market_cities_other= 1;
+else market_cities_other= 0;
+run;
+
+Data iri_week ; set iri_week ;
+Market_cities_newyork = Market_cities;
+If market_cities = 'NEW YORK' then market_cities_newyork= 1;
+else market_cities_newyork= 0;
+run;
+
+Data iri_week ; set iri_week ;
+Market_cities_dallas = Market_cities;
+If market_cities = 'DALLAS' then market_cities_dallas= 1;
+else market_cities_dallas= 0;
+run;
+
+Data iri_week ; set iri_week ;
+Market_cities_southcarolina = Market_cities;
+If market_cities = 'SOUTH CAROLINA' then market_cities_southcarolina= 1;
+else market_cities_southcarolina= 0;
+run;
+
+proc print data=iri_week (obs=15);run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_losangeles = input(Market_cities_losangeles, comma18.);
+drop Market_cities_losangeles;
+rename n_Market_cities_losangeles = Market_cities_LOS_ANGELES;
+run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_newyork = input(Market_cities_newyork, comma18.);
+drop Market_cities_newyork;
+rename n_Market_cities_newyork = Market_cities_NEW_YORK;
+run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_dallas = input(Market_cities_dallas, comma18.);
+drop Market_cities_dallas;
+rename n_Market_cities_dallas = Market_cities_DALLAS;
+run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_southcarolina = input(Market_cities_southcarolina, comma18.);
+drop Market_cities_southcarolina;
+rename n_Market_cities_southcarolina = Market_cities_SOUTH_CAROLINA;
+run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_other = input(Market_cities_other, comma18.);
+drop Market_cities_other;
+rename n_Market_cities_other = Market_cities_OTHER;
+run;
+
+proc contents data=iri_week;run;
+
+proc print data=iri_week(obs=10) noobs; run;
+
+proc import file="H:\Project\iri_week.xlsx"
+out=iri_week dbms=xlsx replace;
+run;
+
+proc sql;
+    create table project_coffee as
+    select * from coffee_random_data as x inner join iri_week as y
+    on x.IRI_KEY = y.IRI_KEY;
+quit;
+
+
+/*Code for cities joining and models*/
+
+proc import file="H:\Project\IRI_FINAL.xls"
+out=iri_week dbms=xls REPLACE;run;
+
+proc print data = iri_week (obs=10) noobs; run;
+
+Data iri_week ; set iri_week ;
+Market_cities_chicago = Market_cities;
+If Market_cities = 'CHICAGO' then market_cities_chicago= 1;
+else market_cities_chicago= 0;
+run;
+
+Data iri_week ; set iri_week ;
+Market_cities_losangeles = Market_cities;
+If Market_cities = 'LOS ANGELES' then market_cities_losangeles= 1;
+else market_cities_losangeles= 0;
+run;
+
+Data iri_week ; set iri_week ;
+Market_cities_other = Market_cities;
+If market_cities = 'OTHER' then market_cities_other= 1;
+else market_cities_other= 0;
+run;
+
+Data iri_week ; set iri_week ;
+Market_cities_newyork = Market_cities;
+If market_cities = 'NEW YORK' then market_cities_newyork= 1;
+else market_cities_newyork= 0;
+run;
+
+Data iri_week ; set iri_week ;
+Market_cities_dallas = Market_cities;
+If market_cities = 'DALLAS' then market_cities_dallas= 1;
+else market_cities_dallas= 0;
+run;
+
+Data iri_week ; set iri_week ;
+Market_cities_southcarolina = Market_cities;
+If market_cities = 'SOUTH CAROLINA' then market_cities_southcarolina= 1;
+else market_cities_southcarolina= 0;
+run;
+
+proc print data=iri_week (obs=15);run;
+
+proc contents data= iri_week;run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_chicago = input(Market_cities_chicago, comma22.);
+drop Market_cities_chicago;
+rename n_Market_cities_chicago = Market_cities_CHICAGO;
+run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_losangeles = input(Market_cities_losangeles, comma22.);
+drop Market_cities_losangeles;
+rename n_Market_cities_losangeles = Market_cities_LOS_ANGELES;
+run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_newyork = input(Market_cities_newyork, comma22.);
+drop Market_cities_newyork;
+rename n_Market_cities_newyork = Market_cities_NEW_YORK;
+run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_dallas = input(Market_cities_dallas, comma22.);
+drop Market_cities_dallas;
+rename n_Market_cities_dallas = Market_cities_DALLAS;
+run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_southcarolina = input(Market_cities_southcarolina, comma22.);
+drop Market_cities_southcarolina;
+rename n_Market_cities_southcarolina = Market_cities_SOUTH_CAROLINA;
+run;
+
+Data iri_week ; set iri_week ;
+n_Market_cities_other = input(Market_cities_other, comma22.);
+drop Market_cities_other;
+rename n_Market_cities_other = Market_cities_OTHER;
+run;
+
+proc contents data=iri_week;run;
+
+proc print data=iri_week(obs=50) noobs; run;
+
+proc import file="H:\Project\coffee_demo_group_final.xlsx"
+out=coffee_random_data dbms=xlsx;run;
+
+proc print data=projectdata(obs=10) noobs; run;
+
+
+
+proc export data = iri_week
+	outfile = "H:\Project\iri_week_modified_data.xlsx"
+	dbms = xlsx;
+run;
+
+proc import file="H:\Project\projectdata"
+out=projectdata dbms=dlm;run;
+
+proc sql;
+    create table projectccc as
+    select * from projectdata as x inner join iri_week as y
+    on x.IRI_KEY = y.IRI_KEY;
+quit;
+
+proc print data=projectccc(obs=10) noobs;run;
+
+proc surveyselect data= projectccc
+    out=project1
+    seed=1234
+    sampsize=10000;
+run;
+
+proc print data=project1(obs=10) noobs;run;
+
+proc reg data = project1;
+model price =  D_0 D_1 A B C None vol_eq BRAND_FOLGERS BRAND_STARBUCKS BRAND_MILLSTONE BRAND_PRIVATE BRAND_OTHER flavour_category_REGULAR flavour_category_VANILLA flavour_category_CHOCOLATE package_category_BAG package_category_BOX package_category_CONTAINER Market_cities_CHICAGO Market_cities_LOS_ANGELES Market_cities_NEW_YORK Market_cities_DALLAS Market_cities_OTHER;
+run; 
+
+proc reg data = project1;
+model price =  A B C BRAND_FOLGERS BRAND_STARBUCKS BRAND_MILLSTONE BRAND_PRIVATE BRAND_OTHER flavour_category_REGULAR flavour_category_VANILLA flavour_category_CHOCOLATE package_category_BAG package_category_BOX Market_cities_CHICAGO Market_cities_LOS_ANGELES Market_cities_NEW_YORK Market_cities_OTHER;
+run; 
+
+
+proc reg data = project1;
+model price =  A B C vol_eq BRAND_FOLGERS BRAND_STARBUCKS BRAND_MILLSTONE BRAND_PRIVATE BRAND_OTHER flavour_category_REGULAR flavour_category_VANILLA flavour_category_CHOCOLATE package_category_BAG package_category_BOX Market_cities_CHICAGO Market_cities_LOS_ANGELES Market_cities_NEW_YORK Market_cities_OTHER /VIF;
+run; 
+
+
+
+proc reg data = project1;
+model dollars =  D_0 D_1 A None vol_eq BRAND_FOLGERS BRAND_STARBUCKS BRAND_MILLSTONE BRAND_PRIVATE BRAND_OTHER flavour_category_REGULAR package_category_CONTAINER Market_cities_CHICAGO  Market_cities_NEW_YORK Market_cities_OTHER;
+run;
+
+proc export data = project1
+	outfile = "H:\Project\project_data_cities.xlsx"
+	dbms = xlsx;
+run;
